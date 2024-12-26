@@ -48,16 +48,34 @@ func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...git
 		opt.ApplyFilesGetOptions(&fileOpts)
 	}
 
-	_, directoryContent, _, err := c.c.Client().Repositories.GetContents(ctx, c.ref.GetIdentity(), c.ref.GetRepository(), path, opts)
+	fileContent, directoryContent, _, err := c.c.Client().Repositories.GetContents(ctx, c.ref.GetIdentity(), c.ref.GetRepository(), path, opts)
 	if err != nil {
 		return nil, err
+	}
+
+	files := make([]*gitprovider.CommitFile, 0)
+
+	if fileContent != nil {
+		output, _, err := c.c.Client().Repositories.DownloadContents(ctx, c.ref.GetIdentity(), c.ref.GetRepository(), path, opts)
+		if err != nil {
+			return nil, err
+		}
+		content, err := io.ReadAll(output)
+		if err != nil {
+			return nil, err
+		}
+
+		contentStr := string(content)
+		files = append(files, &gitprovider.CommitFile{
+			Path:    &path,
+			Content: &contentStr,
+		})
+		return files, nil
 	}
 
 	if len(directoryContent) == 0 {
 		return nil, fmt.Errorf("no files found on this path[%s]", path)
 	}
-
-	files := make([]*gitprovider.CommitFile, 0)
 
 	// For handling to close the output [io.ReadCloser] errors.
 	var errs error
