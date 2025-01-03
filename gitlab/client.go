@@ -70,10 +70,11 @@ type Client struct {
 // This field is set at client creation time, and can't be changed.
 func (c *Client) SupportedDomain() string {
 	u, _ := url.Parse(c.domain)
+	domain := c.domain
 	if u.Scheme == "" {
-		c.domain = fmt.Sprintf("https://%s", c.domain)
+		domain = fmt.Sprintf("https://%s", c.domain)
 	}
-	return c.domain
+	return domain
 }
 
 // SupportedSSHDomain returns the ssh domain endpoint for this client, e.g. "gitlab.com" or
