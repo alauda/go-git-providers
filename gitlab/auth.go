@@ -17,6 +17,8 @@ limitations under the License.
 package gitlab
 
 import (
+	"fmt"
+
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	gogitlab "github.com/xanzy/go-gitlab"
 )
@@ -53,7 +55,8 @@ func NewClient(token string, tokenType string, optFns ...gitprovider.ClientOptio
 			}
 		} else {
 			domain = *opts.Domain
-			gl, err = gogitlab.NewOAuthClient(token, gogitlab.WithHTTPClient(httpClient), gogitlab.WithBaseURL(domain))
+			baseURL := fmt.Sprintf("https://%s", domain)
+			gl, err = gogitlab.NewOAuthClient(token, gogitlab.WithHTTPClient(httpClient), gogitlab.WithBaseURL(baseURL))
 			if err != nil {
 				return nil, err
 			}
