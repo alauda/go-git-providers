@@ -24,6 +24,7 @@ import (
 
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/xanzy/go-gitlab"
+	"k8s.io/klog/v2"
 )
 
 // FileClient implements the gitprovider.FileClient interface.
@@ -39,7 +40,6 @@ type FileClient struct {
 // If a file path is given, the contents of the file are returned
 // If a directory path is given, the contents of the files in the path's root are returned
 func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...gitprovider.FilesGetOption) ([]*gitprovider.CommitFile, error) {
-
 	filesGetOpts := gitprovider.FilesGetOptions{}
 
 	for _, opt := range optFns {
@@ -63,6 +63,7 @@ func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...git
 
 	files := make([]*gitprovider.CommitFile, 0)
 	for _, file := range listFiles {
+		klog.InfoS("Get file", "file", file.Name)
 		if file.Type == "tree" {
 			continue
 		}
