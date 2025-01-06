@@ -24,7 +24,6 @@ import (
 
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/xanzy/go-gitlab"
-	"k8s.io/klog/v2"
 )
 
 // FileClient implements the gitprovider.FileClient interface.
@@ -63,11 +62,28 @@ func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...git
 
 	files := make([]*gitprovider.CommitFile, 0)
 	for _, file := range listFiles {
-		klog.InfoS("Get file", "file", file.Name)
 		if file.Type == "tree" {
 			continue
 		}
 		fileDownloaded, _, err := c.c.Client().RepositoryFiles.GetFile(getRepoPath(c.ref), file.Path, fileOpts)
+		if err != nil {
+			return nil, err
+		}
+		filePath := fileDownloaded.FilePath
+		fileContentDecoded := base64.NewDecoder(base64.RawStdEncoding, strings.NewReader(fileDownloaded.Content))
+		fileBytes, err := io.ReadAll(fileContentDecoded)
+		if err != nil {
+			return nil, err
+		}
+		fileStr := string(fileBytes)
+		files = append(files, &gitprovider.CommitFile{
+			Path:    &filePath,
+			Content: &fileStr,
+		})
+	}
+
+	if len(listFiles) <= 0 {
+		fileDownloaded, _, err := c.c.Client().RepositoryFiles.GetFile(getRepoPath(c.ref), path, fileOpts)
 		if err != nil {
 			return nil, err
 		}
