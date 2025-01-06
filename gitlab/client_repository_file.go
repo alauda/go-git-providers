@@ -71,7 +71,7 @@ func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...git
 			return nil, err
 		}
 		filePath := fileDownloaded.FilePath
-		fileContentDecoded := base64.NewDecoder(base64.RawStdEncoding, strings.NewReader(fileDownloaded.Content))
+		fileContentDecoded := base64.NewDecoder(base64.StdEncoding, strings.NewReader(fileDownloaded.Content))
 		fileBytes, err := io.ReadAll(fileContentDecoded)
 		if err != nil {
 			return nil, err
@@ -89,8 +89,7 @@ func (c *FileClient) Get(ctx context.Context, path, branch string, optFns ...git
 			return nil, err
 		}
 		filePath := fileDownloaded.FilePath
-		fmt.Printf(fileDownloaded.Content + "\n")
-		fileContentDecoded := base64.NewDecoder(base64.RawStdEncoding, strings.NewReader(fileDownloaded.Content))
+		fileContentDecoded := base64.NewDecoder(base64.StdEncoding, strings.NewReader(fileDownloaded.Content))
 		fileBytes, err := io.ReadAll(fileContentDecoded)
 		if err != nil {
 			return nil, err
