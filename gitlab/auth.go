@@ -23,13 +23,19 @@ import (
 	gogitlab "github.com/xanzy/go-gitlab"
 )
 
+type TokenType string
+
 const (
 	// DefaultDomain specifies the default domain used as the backend.
 	DefaultDomain = "gitlab.com"
+
+	TokenTypeOAuth2 TokenType = "oauth2"
+	TokenTypePat    TokenType = "pat"
+	TokenTypeBasic  TokenType = "basicauth"
 )
 
 // NewClient creates a new gitlab.Client instance for GitLab API endpoints.
-func NewClient(username, password, token string, tokenType string, optFns ...gitprovider.ClientOption) (gitprovider.Client, error) {
+func NewClient(username, password, token string, tokenType TokenType, optFns ...gitprovider.ClientOption) (gitprovider.Client, error) {
 	var gl *gogitlab.Client
 	var domain, sshDomain string
 
@@ -45,7 +51,7 @@ func NewClient(username, password, token string, tokenType string, optFns ...git
 		return nil, err
 	}
 
-	if tokenType == "oauth2" {
+	if tokenType == TokenTypeOAuth2 {
 		if opts.Domain == nil || *opts.Domain == DefaultDomain {
 			// No domain set or the default gitlab.com used
 			domain = DefaultDomain
@@ -61,7 +67,7 @@ func NewClient(username, password, token string, tokenType string, optFns ...git
 				return nil, err
 			}
 		}
-	} else if tokenType == "pat" {
+	} else if tokenType == TokenTypePat {
 		if opts.Domain == nil || *opts.Domain == DefaultDomain {
 			// No domain set or the default gitlab.com used
 			domain = DefaultDomain
@@ -77,7 +83,7 @@ func NewClient(username, password, token string, tokenType string, optFns ...git
 				return nil, err
 			}
 		}
-	} else if tokenType == "basicauth" {
+	} else if tokenType == TokenTypeBasic {
 		if opts.Domain == nil || *opts.Domain == DefaultDomain {
 			// No domain set or the default gitlab.com used
 			domain = DefaultDomain
