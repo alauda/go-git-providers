@@ -29,7 +29,7 @@ const (
 )
 
 // NewClient creates a new gitlab.Client instance for GitLab API endpoints.
-func NewClient(token string, tokenType string, optFns ...gitprovider.ClientOption) (gitprovider.Client, error) {
+func NewClient(username, password, token string, tokenType string, optFns ...gitprovider.ClientOption) (gitprovider.Client, error) {
 	var gl *gogitlab.Client
 	var domain, sshDomain string
 
@@ -61,7 +61,7 @@ func NewClient(token string, tokenType string, optFns ...gitprovider.ClientOptio
 				return nil, err
 			}
 		}
-	} else {
+	} else if tokenType == "pat" {
 		if opts.Domain == nil || *opts.Domain == DefaultDomain {
 			// No domain set or the default gitlab.com used
 			domain = DefaultDomain
@@ -73,6 +73,22 @@ func NewClient(token string, tokenType string, optFns ...gitprovider.ClientOptio
 			domain = *opts.Domain
 			baseURL := fmt.Sprintf("https://%s", domain)
 			gl, err = gogitlab.NewClient(token, gogitlab.WithHTTPClient(httpClient), gogitlab.WithBaseURL(baseURL))
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else if tokenType == "basicauth" {
+		if opts.Domain == nil || *opts.Domain == DefaultDomain {
+			// No domain set or the default gitlab.com used
+			domain = DefaultDomain
+			gl, err = gogitlab.NewBasicAuthClient(username, password, gogitlab.WithHTTPClient(httpClient))
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			domain = *opts.Domain
+			baseURL := fmt.Sprintf("https://%s", domain)
+			gl, err = gogitlab.NewBasicAuthClient(username, password, gogitlab.WithHTTPClient(httpClient), gogitlab.WithBaseURL(baseURL))
 			if err != nil {
 				return nil, err
 			}
