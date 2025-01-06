@@ -19,7 +19,6 @@ package gitlab
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"strings"
 
